@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" width="1200" height="750">
+  <defs>
+    <linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F8F7F5"/>
+      <stop offset="50%" stop-color="#E9DDE0"/>
+      <stop offset="100%" stop-color="#D8C2C8"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="750" fill="url(#bg2)"/>
+  <!-- Browser frame -->
+  <rect x="70" y="60" width="1060" height="630" rx="14" fill="#FAF8F6" stroke="#681D32" stroke-opacity="0.2" stroke-width="1.5"/>
+  <rect x="70" y="60" width="1060" height="44" rx="14" fill="#681D32"/>
+  <circle cx="100" cy="82" r="6" fill="#F8F7F5"/>
+  <circle cx="120" cy="82" r="6" fill="#F8F7F5" fill-opacity="0.4"/>
+  <circle cx="140" cy="82" r="6" fill="#F8F7F5" fill-opacity="0.4"/>
+  <rect x="360" y="71" width="480" height="22" rx="6" fill="#4B1323"/>
+  <text x="600" y="86" fill="#F8F7F5" fill-opacity="0.85" font-family="monospace" font-size="11" text-anchor="middle">https://ghjsfkdfj.space-z.ai/#/</text>
+  <!-- Editorial Layout -->
+  <line x1="150" y1="104" x2="150" y2="690" stroke="#681D32" stroke-opacity="0.12" stroke-width="1"/>
+  <line x1="720" y1="104" x2="720" y2="690" stroke="#681D32" stroke-opacity="0.12" stroke-width="1"/>
+  <text x="180" y="175" fill="#A63854" font-family="sans-serif" font-size="13" font-weight="700" letter-spacing="3">[ BEAUTY &amp; AESTHETICS BRAND ]</text>
+  <text x="180" y="265" fill="#171316" font-family="serif" font-size="78" font-weight="700" letter-spacing="-1">Elora</text>
+  <text x="180" y="345" fill="#681D32" font-family="sans-serif" font-size="68" font-weight="300" letter-spacing="-1">Beauty</text>
+  <text x="180" y="405" fill="#171316" fill-opacity="0.7" font-family="sans-serif" font-size="18">Editorial Showcase, Service Catalog &amp; Brand Presentation</text>
+  <!-- Right side luxury card -->
+  <rect x="760" y="150" width="310" height="470" rx="16" fill="#681D32"/>
+  <circle cx="915" cy="330" r="95" fill="none" stroke="#E9DDE0" stroke-opacity="0.35" stroke-width="1.5"/>
+  <circle cx="915" cy="330" r="65" fill="#A63854" fill-opacity="0.5"/>
+  <text x="915" y="338" fill="#FFFFFF" font-family="serif" font-size="28" text-anchor="middle" letter-spacing="4">ELORA</text>
+  <text x="915" y="545" fill="#E9DDE0" font-family="sans-serif" font-size="14" text-anchor="middle" letter-spacing="2">AESTHETIC DIGITAL</text>
+  <!-- CTA pill -->
+  <rect x="180" y="470" width="210" height="54" rx="27" fill="#681D32"/>
+  <text x="285" y="503" fill="#FFFFFF" font-family="sans-serif" font-size="14" font-weight="700" text-anchor="middle" letter-spacing="1">EXPLORE EXPERIENCE</text>
+</svg>

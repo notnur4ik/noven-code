@@ -1,0 +1,15 @@
+{
+  "name": "noven-code-platform",
+  "version": "1.0.0",
+  "description": "Noven.code — Complete Multilingual Digital Studio Website, 3D WebGL Experience, Multi-Step Order Builder, and Role-Based CRM Platform",
+  "private": true,
+  "main": "src/server/index.js",
+  "scripts": {
+    "start": "node src/server/index.js",
+    "dev": "node --watch src/server/index.js",
+    "verify": "node scripts/verify-all.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  }
+}
