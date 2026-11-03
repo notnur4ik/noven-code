@@ -59,8 +59,21 @@ const initialSeedPayload = {
 const hybridEngineScript = `
 (function() {
   const SEED = ${JSON.stringify(initialSeedPayload)};
-  const STORAGE_KEY = 'nc_standalone_database_v1';
-  const SESSION_KEY = 'nc_standalone_session_v1';
+  const STORAGE_KEY = 'nc_standalone_database_v2';
+  const SESSION_KEY = 'nc_standalone_session_v2';
+
+  function ensureArray(val) {
+    if (Array.isArray(val)) return val;
+    if (typeof val === 'string' && val.trim()) {
+      try {
+        const parsed = JSON.parse(val);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  }
 
   // Pure JS SHA-256 implementation (works even on file:// where crypto.subtle may be restricted)
   function sha256Hex(ascii) {
@@ -144,7 +157,15 @@ const hybridEngineScript = `
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (parsed && Array.isArray(parsed.services)) return parsed;
+        if (parsed && Array.isArray(parsed.services)) {
+          parsed.services = parsed.services.map((s) => ({
+            ...s,
+            benefits_ru: ensureArray(s.benefits_ru),
+            benefits_kk: ensureArray(s.benefits_kk),
+            benefits_en: ensureArray(s.benefits_en)
+          }));
+          return parsed;
+        }
       }
     } catch {}
     const now = new Date().toISOString();
@@ -163,12 +184,15 @@ const hybridEngineScript = `
           updated_at: now
         }
       ],
-      roles: SEED.roles.map((r) => ({ ...r })),
+      roles: SEED.roles.map((r) => ({
+        ...r,
+        permissions: ensureArray(r.permissions_json)
+      })),
       services: SEED.services.map((s) => ({
         ...s,
-        benefits_ru: s.benefits_ru,
-        benefits_kk: s.benefits_kk,
-        benefits_en: s.benefits_en,
+        benefits_ru: ensureArray(s.benefits_ru),
+        benefits_kk: ensureArray(s.benefits_kk),
+        benefits_en: ensureArray(s.benefits_en),
         is_visible: Boolean(s.is_visible)
       })),
       pricingPlans: SEED.pricingPlans.map((p) => ({
@@ -398,8 +422,8 @@ const hybridEngineScript = `
       db.orders.unshift(orderRecord);
       db.activityLogs.unshift({
         id: 'log-' + Date.now(),
-        username: 'PUBLIC_ORDER',
-        role: 'CLIENT',
+        actor_username: 'PUBLIC_ORDER',
+        actor_role: 'CLIENT',
         action: 'order_created',
         entity_type: 'orders',
         entity_id: orderCode,
@@ -472,8 +496,8 @@ const hybridEngineScript = `
       setSession(sess);
       db.activityLogs.unshift({
         id: 'log-' + Date.now(),
-        username: user.username,
-        role: user.role,
+        actor_username: user.username,
+        actor_role: user.role,
         action: 'login_success',
         entity_type: 'auth',
         entity_id: user.id,
@@ -903,7 +927,12 @@ body.crm-mode-active {
   </style>
 </head>
 <body>
-  <div id="nc-app"></div>
+  <div id="nc-app">
+    <div style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #171316; color: #F8F7F5; font-family: sans-serif; gap: 0.75rem;">
+      <div style="font-size: 0.85rem; letter-spacing: 0.16em; color: #E9DDE0;">✻ NOVEN.CODE</div>
+      <div style="font-size: 1.25rem; font-weight: 800; letter-spacing: 0.04em;">WE BUILD DIGITAL. YOU GROW.</div>
+    </div>
+  </div>
   <div id="nc-crm-root" style="display: none;"></div>
 
   <script>

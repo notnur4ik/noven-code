@@ -109,6 +109,45 @@
       .replace(/"/g, '&quot;');
   }
 
+  function ensureArray(val) {
+    if (Array.isArray(val)) return val;
+    if (typeof val === 'string' && val.trim()) {
+      try {
+        const parsed = JSON.parse(val);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  }
+
+  function safeSection(sectionLabel, renderFn) {
+    try {
+      return renderFn();
+    } catch (err) {
+      console.error(`[Noven.code Section Error Boundary: ${sectionLabel}]`, err);
+      return `
+        <section class="nc-section nc-section-light" role="alert">
+          <div class="nc-container">
+            <div style="background: var(--white); border: 1px solid var(--crimson); border-radius: 16px; padding: 2.25rem; text-align: center; max-width: 640px; margin: 0 auto;">
+              <span class="nc-bracket-tag" style="color: var(--crimson);">[ NOVEN.CODE / SYSTEM NOTICE ]</span>
+              <h3 style="font-family: var(--font-display); font-size: 1.35rem; font-weight: 800; color: var(--near-black); margin-top: 0.5rem;">
+                Временная ошибка отображения секции (${esc(sectionLabel)})
+              </h3>
+              <p style="font-size: 0.92rem; color: rgba(23, 19, 22, 0.72); margin: 0.65rem 0 1.25rem 0;">
+                Остальные разделы сайта продолжают работать в штатном режиме.
+              </p>
+              <button type="button" class="nc-btn nc-btn-primary" onclick="window.refreshNovenPublicSite && window.refreshNovenPublicSite()">
+                Повторить загрузку ↻
+              </button>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+  }
+
   function setLang(newLang) {
     if (!['ru', 'kk', 'en'].includes(newLang)) return;
     state.lang = newLang;
@@ -307,7 +346,7 @@
 
   function renderServicesSection() {
     const tr = t();
-    const services = state.bootstrap.services || [];
+    const services = ensureArray(state.bootstrap.services);
 
     return `
       <section id="section-services" class="nc-section nc-section-dark">
@@ -327,7 +366,7 @@
                 const title = locField(srv, 'title');
                 const desc = locField(srv, 'desc');
                 const cta = locField(srv, 'cta');
-                const benefits = srv[`benefits_${state.lang}`] || srv.benefits_ru || [];
+                const benefits = ensureArray(srv[`benefits_${state.lang}`] || srv.benefits_ru);
                 return `
                   <article class="nc-service-card">
                     <div>
@@ -372,7 +411,7 @@
 
   function renderPricingSection() {
     const tr = t();
-    const plans = state.bootstrap.pricingPlans || [];
+    const plans = ensureArray(state.bootstrap.pricingPlans);
 
     return `
       <section id="section-pricing" class="nc-section nc-section-light">
@@ -412,7 +451,7 @@
                       ${esc(tr.pricing.includedLabel)}
                     </div>
                     <ul class="nc-pricing-features-list">
-                      ${(plan.features || []).map((f) => `
+                      ${ensureArray(plan.features).map((f) => `
                         <li>
                           <span class="nc-pricing-check">✓</span>
                           <span>${esc(locField(f, 'text'))}</span>
@@ -1177,43 +1216,43 @@
   function renderMainView() {
     const r = state.route;
     if (r === '/services') {
-      return `<main style="padding-top: 78px;">${renderServicesSection()}${renderPricingSection()}${renderContactSection()}</main>`;
+      return `<main style="padding-top: 78px;">${safeSection('Services', renderServicesSection)}${safeSection('Pricing', renderPricingSection)}${safeSection('Contact', renderContactSection)}</main>`;
     }
     if (r === '/pricing') {
-      return `<main style="padding-top: 78px;">${renderPricingSection()}${renderFaqSection()}${renderContactSection()}</main>`;
+      return `<main style="padding-top: 78px;">${safeSection('Pricing', renderPricingSection)}${safeSection('FAQ', renderFaqSection)}${safeSection('Contact', renderContactSection)}</main>`;
     }
     if (r === '/portfolio') {
-      return `<main style="padding-top: 78px;">${renderPortfolioSection()}${renderContactSection()}</main>`;
+      return `<main style="padding-top: 78px;">${safeSection('Portfolio', renderPortfolioSection)}${safeSection('Contact', renderContactSection)}</main>`;
     }
     if (r === '/about') {
-      return `<main style="padding-top: 78px;">${renderAboutSection()}${renderProcessSection()}${renderContactSection()}</main>`;
+      return `<main style="padding-top: 78px;">${safeSection('About', renderAboutSection)}${safeSection('Process', renderProcessSection)}${safeSection('Contact', renderContactSection)}</main>`;
     }
     if (r === '/process') {
-      return `<main style="padding-top: 78px;">${renderProcessSection()}${renderContactSection()}</main>`;
+      return `<main style="padding-top: 78px;">${safeSection('Process', renderProcessSection)}${safeSection('Contact', renderContactSection)}</main>`;
     }
     if (r === '/faq') {
-      return `<main style="padding-top: 78px;">${renderFaqSection()}${renderContactSection()}</main>`;
+      return `<main style="padding-top: 78px;">${safeSection('FAQ', renderFaqSection)}${safeSection('Contact', renderContactSection)}</main>`;
     }
     if (r === '/contact') {
-      return `<main style="padding-top: 78px;">${renderContactSection()}</main>`;
+      return `<main style="padding-top: 78px;">${safeSection('Contact', renderContactSection)}</main>`;
     }
     if (r === '/start-project') {
-      return `<main>${renderOrderBuilderSection()}</main>`;
+      return `<main>${safeSection('Order Builder', renderOrderBuilderSection)}</main>`;
     }
     if (r === '/order-confirmation') {
-      return `<main>${renderOrderConfirmationPage()}</main>`;
+      return `<main>${safeSection('Order Confirmation', renderOrderConfirmationPage)}</main>`;
     }
     // Default Homepage (/) with all core sections
     return `
       <main>
-        ${renderHeroSection()}
-        ${renderServicesSection()}
-        ${renderPortfolioSection()}
-        ${renderProcessSection()}
-        ${renderPricingSection()}
-        ${renderAboutSection()}
-        ${renderFaqSection()}
-        ${renderContactSection()}
+        ${safeSection('Hero', renderHeroSection)}
+        ${safeSection('Services', renderServicesSection)}
+        ${safeSection('Portfolio', renderPortfolioSection)}
+        ${safeSection('Process', renderProcessSection)}
+        ${safeSection('Pricing', renderPricingSection)}
+        ${safeSection('About', renderAboutSection)}
+        ${safeSection('FAQ', renderFaqSection)}
+        ${safeSection('Contact', renderContactSection)}
       </main>
     `;
   }
@@ -1222,18 +1261,38 @@
     const root = document.getElementById('nc-app');
     if (!root) return;
 
-    root.innerHTML = `
-      ${renderHeader()}
-      ${renderMainView()}
-      ${renderFooter()}
-      ${renderSoundConsentBanner()}
-    `;
+    try {
+      root.innerHTML = `
+        ${safeSection('Header', renderHeader)}
+        ${renderMainView()}
+        ${safeSection('Footer', renderFooter)}
+        ${safeSection('Sound Consent', renderSoundConsentBanner)}
+      `;
 
-    bindEvents();
+      bindEvents();
 
-    const canvasEl = document.getElementById('nc-hero-3d-canvas');
-    if (canvasEl && window.initHero3DCanvas) {
-      window.initHero3DCanvas(canvasEl);
+      const canvasEl = document.getElementById('nc-hero-3d-canvas');
+      if (canvasEl && window.initHero3DCanvas) {
+        try {
+          window.initHero3DCanvas(canvasEl);
+        } catch (canvasErr) {
+          console.warn('[Noven.code 3D Canvas Warning]', canvasErr);
+        }
+      }
+    } catch (fatalErr) {
+      console.error('[Noven.code Global Error Boundary]', fatalErr);
+      root.innerHTML = `
+        <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #171316; color: #F8F7F5; padding: 2rem;">
+          <div style="max-width: 540px; width: 100%; background: #1E181D; border: 1px solid #A63854; border-radius: 18px; padding: 2.5rem; text-align: center;">
+            <div style="font-family: var(--font-display, sans-serif); font-size: 0.78rem; letter-spacing: 0.12em; color: #E9DDE0; margin-bottom: 0.75rem;">[ NOVEN.CODE / RECOVERY ]</div>
+            <h1 style="font-family: var(--font-display, sans-serif); font-size: 1.65rem; font-weight: 800; margin-bottom: 0.75rem;">Не удалось загрузить интерфейс</h1>
+            <p style="font-size: 0.92rem; color: rgba(248, 247, 245, 0.72); margin-bottom: 1.5rem;">Произошла временная ошибка при инициализации страницы. Нажмите кнопку ниже для повторной загрузки.</p>
+            <button type="button" onclick="window.location.reload()" style="padding: 0.85rem 1.75rem; border-radius: 999px; background: #681D32; border: 1px solid #A63854; color: #FFFFFF; font-weight: 700; cursor: pointer;">
+              Перезагрузить страницу ↻
+            </button>
+          </div>
+        </div>
+      `;
     }
   }
 

@@ -142,6 +142,35 @@
       .replace(/"/g, '&quot;');
   }
 
+  function ensureArray(val) {
+    if (Array.isArray(val)) return val;
+    if (typeof val === 'string' && val.trim()) {
+      try {
+        const parsed = JSON.parse(val);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  }
+
+  function safeCrmTab(tabName, renderFn) {
+    try {
+      return renderFn();
+    } catch (err) {
+      console.error(`[Noven.code CRM Tab Error Boundary: ${tabName}]`, err);
+      return `
+        <div class="crm-panel" role="alert" style="border-color: var(--crimson); text-align: center; padding: 2.5rem;">
+          <span class="nc-bracket-tag" style="color: var(--soft-rose);">[ CRM MODULE RECOVERY / ${esc(tabName.toUpperCase())} ]</span>
+          <h3 style="font-family: var(--font-display); font-size: 1.35rem; margin: 0.65rem 0;">Не удалось отобразить вкладку</h3>
+          <p style="font-size: 0.88rem; opacity: 0.78; margin-bottom: 1.25rem;">Произошла ошибка при форматировании данных вкладки. Остальные модули CRM доступны.</p>
+          <button type="button" class="nc-btn nc-btn-primary" onclick="window.refreshNovenCrm && window.refreshNovenCrm()">Повторить попытку ↻</button>
+        </div>
+      `;
+    }
+  }
+
   function hasPerm(perm) {
     if (!crmState.user) return false;
     const perms = crmState.user.permissions || [];
@@ -531,10 +560,10 @@
             <strong style="color:var(--soft-rose);display:block;margin-bottom:0.65rem;font-size:0.85rem;">${esc(u.attachmentsTitle)} (${(o.attachments || []).length})</strong>
             ${(o.attachments || []).length === 0 ? `<div style="font-size:0.82rem;opacity:0.65;">No files uploaded with this order.</div>` : `
               <div style="display:flex;flex-wrap:wrap;gap:0.75rem;">
-                ${o.attachments.map((att) => `
-                  <a href="/api/admin/attachments/${esc(att.id)}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.5rem 0.85rem;border-radius:8px;background:var(--burgundy);color:var(--white);font-size:0.8rem;">
+                ${ensureArray(o.attachments).map((att) => `
+                  <a href="${att.dataBase64 ? esc(att.dataBase64) : `/api/admin/attachments/${esc(att.id)}`}" download="${esc(att.original_name || 'attachment')}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.5rem 0.85rem;border-radius:8px;background:var(--burgundy);color:var(--white);font-size:0.8rem;">
                     <span>📎 ${esc(att.original_name)}</span>
-                    <span style="opacity:0.75;">(${Math.round(att.size_bytes / 1024)} KB) ↗</span>
+                    <span style="opacity:0.75;">(${Math.round((att.size_bytes || 1024) / 1024)} KB) ↗</span>
                   </a>
                 `).join('')}
               </div>
@@ -1255,16 +1284,16 @@
     const tab = crmState.activeTab;
 
     let activeViewHtml = '';
-    if (tab === 'dashboard') activeViewHtml = renderDashboardTab();
-    else if (tab === 'orders') activeViewHtml = renderOrdersTab();
-    else if (tab === 'clients') activeViewHtml = renderClientsTab();
-    else if (tab === 'projects') activeViewHtml = renderProjectsTab();
-    else if (tab === 'tasks') activeViewHtml = renderTasksTab();
-    else if (tab === 'team') activeViewHtml = renderTeamTab();
-    else if (tab === 'pricing') activeViewHtml = renderPricingTab();
-    else if (tab === 'content') activeViewHtml = renderContentTab();
-    else if (tab === 'settings') activeViewHtml = renderSettingsTab();
-    else if (tab === 'logs') activeViewHtml = renderLogsTab();
+    if (tab === 'dashboard') activeViewHtml = safeCrmTab('dashboard', renderDashboardTab);
+    else if (tab === 'orders') activeViewHtml = safeCrmTab('orders', renderOrdersTab);
+    else if (tab === 'clients') activeViewHtml = safeCrmTab('clients', renderClientsTab);
+    else if (tab === 'projects') activeViewHtml = safeCrmTab('projects', renderProjectsTab);
+    else if (tab === 'tasks') activeViewHtml = safeCrmTab('tasks', renderTasksTab);
+    else if (tab === 'team') activeViewHtml = safeCrmTab('team', renderTeamTab);
+    else if (tab === 'pricing') activeViewHtml = safeCrmTab('pricing', renderPricingTab);
+    else if (tab === 'content') activeViewHtml = safeCrmTab('content', renderContentTab);
+    else if (tab === 'settings') activeViewHtml = safeCrmTab('settings', renderSettingsTab);
+    else if (tab === 'logs') activeViewHtml = safeCrmTab('logs', renderLogsTab);
 
     root.innerHTML = `
       <div class="crm-layout">
